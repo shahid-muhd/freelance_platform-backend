@@ -1,0 +1,8 @@
+def func_one(**data):
+
+    print(data)
+
+
+dict = {"first": "first", "second": "second"}
+
+func_one(data=dict)

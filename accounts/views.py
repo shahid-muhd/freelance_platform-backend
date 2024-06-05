@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from rest_framework.views import APIView
-from .serializers import UserRegisterSerializer, Userserializer, Addressserializer
+from .serializers import UserRegisterSerializer, UserSerializer, Addressserializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from django.core.mail import send_mail
@@ -17,13 +17,17 @@ from .verifications import (
     request_phone_verification,
     verify_phone_number,
 )
-from rest_framework.decorators import api_view
+import os
+
 from rest_framework import status
 from mongoengine.errors import NotUniqueError
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
+import base64
+import uuid
+from django.core.files.base import ContentFile
 
 
 # view for registering users
@@ -31,40 +35,39 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        print(request.data)
-        email = request.data["email"]
-
-        if check_email_existence(email):
-            print("existing email")
-            return Response(
-                data="An account with the email already exists.",
-                status=status.HTTP_406_NOT_ACCEPTABLE,
-            )
-
         try:
-            otp_doc = UnverifiedEmails(user_email=email)
-            otp_doc.save()
+            print(request.data)
+            email = request.data["email"]
 
-            verification_token = verification_token_generator(email)
-            mail_html_content = mail_html_content_config(verification_token)
+            if check_email_existence(email):
+                print("existing email")
+                return Response(
+                    data="An account with the email already exists.",
+                    status=status.HTTP_406_NOT_ACCEPTABLE,
+                )
 
-            send_mail(
-                "Loomix Account Verification",
-                "",
-                "",
-                [email],
-                fail_silently=False,
-                html_message=mail_html_content,
-            )
-        except NotUniqueError:
-            return Response(status=status.HTTP_208_ALREADY_REPORTED)
+            try:
+                otp_doc = UnverifiedEmails(user_email=email)
+                otp_doc.save()
 
-        return Response(status=status.HTTP_200_OK)
-        # print(request.data)
-        # serializer = UserRegisterSerializer(data=request.data)
-        # serializer.is_valid(raise_exception=True)
-        # serializer.save()
-        # return Response(serializer.data)
+                verification_token = verification_token_generator(email)
+                mail_html_content = mail_html_content_config(verification_token)
+
+                send_mail(
+                    "Loomix Account Verification",
+                    "",
+                    "",
+                    [email],
+                    fail_silently=False,
+                    html_message=mail_html_content,
+                )
+            except NotUniqueError:
+                return Response(status=status.HTTP_208_ALREADY_REPORTED)
+
+            return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request):
         token = request.GET.get("token")
@@ -100,17 +103,25 @@ def create_account(request):
 class UserView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-
+    def get(self, request, *args, **kwargs):
+        user_id = kwargs.get("user_id")
         try:
-            user = Userserializer(request.user)
-            address = Address.objects.get(user=request.user.id)
+            print("user id -->", user_id)
+
+            if user_id is not None:
+                user = CustomUser.objects.get(id=user_id)
+                user_serialized = UserSerializer(user)
+
+            else:
+                user = request.user
+                user_serialized = UserSerializer(user)
+            address = Address.objects.get(user=user.id)
             address = Addressserializer(address)
             address = address.data
         except Address.DoesNotExist:
             address = None
 
-        data = {"user": user.data, "address": address}
+        data = {"user": user_serialized.data, "address": address}
         return Response(data=data, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -127,7 +138,7 @@ class UserView(APIView):
                 if verify_otp(email=email, otp=otp):
 
                     data = {"email": email}
-                    serializer = Userserializer(user, data=data, partial=True)
+                    serializer = UserSerializer(user, data=data, partial=True)
                     if serializer.is_valid():
 
                         serializer.save()
@@ -142,7 +153,7 @@ class UserView(APIView):
             phone = data["phone"]
             if verify_phone_number(phone, otp):
                 serializer_data = {"phone": phone}
-                serializer = Userserializer(user, data=serializer_data, partial=True)
+                serializer = UserSerializer(user, data=serializer_data, partial=True)
                 if serializer.is_valid():
 
                     serializer.save()
@@ -186,7 +197,19 @@ class UserView(APIView):
 
         print("user data :", request.data)
         if "user" in request.data:
-            serializer = Userserializer(user, data=request.data["user"], partial=True)
+            data = request.data["user"]
+            if "profile_image" in data:
+                image_decoded = base64.b64decode(
+                    data["profile_image"].split(";base64,")[1]
+                )
+                splitted_data = data["profile_image"].split("/")[1].split(";")
+                extension = "." + splitted_data[0]
+                file_name = str(uuid.uuid4())[:12]
+                profile_image = ContentFile(image_decoded, name=file_name + extension)
+                data["profile_image"] = profile_image
+
+            print("image", data)
+            serializer = UserSerializer(user, data=data, partial=True)
         if "address" in request.data:
             address_data = request.data["address"]
             address_data["user"] = user.id

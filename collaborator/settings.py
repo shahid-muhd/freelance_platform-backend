@@ -15,6 +15,8 @@ from pathlib import Path
 from datetime import timedelta
 import mongoengine
 from dotenv import load_dotenv
+from celery.schedules import crontab
+
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -33,9 +35,11 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -43,12 +47,16 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
+    "channels",
     "rest_framework",
     "accounts",
     "projects",
     "administration",
     "work_profiles",
+    "payments",
+    "communication",
     "rest_framework_simplejwt.token_blacklist",
+    
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -91,6 +99,7 @@ MIDDLEWARE = [
     "accounts.middlewares.block_middleware.BlockMiddleWare",
 ]
 
+
 ROOT_URLCONF = "collaborator.urls"
 
 TEMPLATES = [
@@ -109,8 +118,18 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "collaborator.wsgi.application"
 
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels_redis.core.RedisChannelLayer",
+#         "CONFIG": {
+#             "hosts": [("localhost", 6379)],
+#         },
+#     },
+# }
+ASGI_APPLICATION = "collaborator.asgi.application"
+# WSGI_APPLICATION = "collaborator.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
@@ -128,6 +147,7 @@ DATABASES = {
 mongoengine.connect(
     db="loomix_jobs", host="localhost", username="shahid", password="shahid123"
 )
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -187,3 +207,32 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# CELERY_BEAT_SCHEDULE = {
+#     'check-subscription-expiry-every-day': {
+#         'task': 'app.tasks.check_subscription_expiry',
+#         'schedule': crontab(hour=10, minute=35),  # Run every day at midnight
+#     },
+# }
+
+
+CELERY_BEAT_SCHEDULE = {
+    'check-subscription-expiry-every-minute': {
+        'task': 'payments.tasks.check_subscription_expiry',
+        'schedule': crontab(minute='*'),  # Run every minute
+    },
+}
+

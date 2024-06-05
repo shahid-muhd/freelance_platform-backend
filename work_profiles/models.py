@@ -10,7 +10,7 @@ class WorkProfile(Document):
     title=fields.StringField(required=True)
     description=fields.StringField(required=True)
     skills=fields.ListField(max_length=10)
-
+    is_archived=fields.BooleanField(default=False)
 
 class Portfolio(models.Model):
     work_profile=models.CharField(max_length=255,blank=False,null=False)

@@ -10,6 +10,7 @@ from django.contrib.auth.models import (
 from mongoengine import Document, fields,ValidationError
 
 
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -91,3 +92,8 @@ class UnverifiedEmails(Document):
         if not self.user_email and not self.user_phone:
             raise ValidationError("At least one of user_email or user_phone must be provided.")
         super().clean() 
+
+
+
+
+

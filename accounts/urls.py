@@ -14,6 +14,7 @@ urlpatterns = [
     path("register<str:token>", views.RegisterView.as_view(), name="register_with_params"),
     path("create-account/", views.create_account, name="create_account"),
     path("user/", views.UserView.as_view(), name="user"),
+    path("user/<int:user_id>/", views.UserView.as_view(), name="user-specific"),
     path("recover/", views.AccountRecovery.as_view(), name="recover"),
-    path("logout/", views.LogoutView.as_view(), name="logout"),
+    path("logout/", views.LogoutView.as_view(), name="logout"), 
 ]

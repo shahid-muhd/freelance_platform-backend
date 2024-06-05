@@ -1,4 +1,7 @@
+import jwt
+import time
 from .models import CustomUser
+import os
 
 
 def check_email_existence(email):
@@ -31,3 +34,27 @@ def mail_html_content_config(token):
                            </html>"""
 
     return mail_html_content
+
+
+app_id = os.getenv("ZEGOCLOUD_APP_SIGN")
+server_secret = str(os.getenv("ZEGOCLOUD_SERVER_SECRET"))
+
+
+def generate_video_chat_token(user_id):
+    if not isinstance(server_secret, str):
+        raise TypeError("Expected the server_secret to be a string")
+
+    payload = {
+        "app_id": app_id,
+        "user_id": user_id,
+        "nonce": int(time.time() * 1000),
+        "expired_at": int(time.time()) + 3600,
+        "privileges": {
+            "room:join": True,
+            "stream:publish": True,
+            "stream:play": True,
+        },
+    }
+
+    token = jwt.encode(payload, server_secret, algorithm="HS256")
+    return token

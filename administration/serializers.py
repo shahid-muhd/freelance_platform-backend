@@ -7,8 +7,5 @@ class UserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = '__all__'
         
-
-
-
 class EmptySerializer(serializers.Serializer):
     pass
