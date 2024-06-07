@@ -35,7 +35,6 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -56,7 +55,6 @@ INSTALLED_APPS = [
     "payments",
     "communication",
     "rest_framework_simplejwt.token_blacklist",
-    
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -144,9 +142,12 @@ DATABASES = {
     }
 }
 
-mongoengine.connect(
-    db="loomix_jobs", host="localhost", username="shahid", password="shahid123"
-)
+MONGO_URI = f"mongodb+srv://{os.environ['MONGO_USERNAME']}:{os.environ['MONGO_PASSWORD']}@cluster0.u7e6i35.mongodb.net/{os.environ['MONGO_DB_NAME']}?retryWrites=true&w=majority&appName=Cluster0"
+mongoengine.connect(host=MONGO_URI)
+
+# mongoengine.connect(
+#     db="loomix_jobs", host="localhost", username="shahid", password="shahid123"
+# )
 
 
 # Password validation
@@ -212,13 +213,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 
 
-
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 # CELERY_BEAT_SCHEDULE = {
@@ -230,9 +230,8 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 
 CELERY_BEAT_SCHEDULE = {
-    'check-subscription-expiry-every-minute': {
-        'task': 'payments.tasks.check_subscription_expiry',
-        'schedule': crontab(minute='*'),  # Run every minute
+    "check-subscription-expiry-every-minute": {
+        "task": "payments.tasks.check_subscription_expiry",
+        "schedule": crontab(minute="*"),  # Run every minute
     },
 }
-

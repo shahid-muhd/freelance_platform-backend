@@ -28,11 +28,13 @@ def send_notification_receiver(sender=None, **details):
 
 
 async def send_notification(notification,type,group_name=None,user=None):
+    print('user __>>>>',user)
+    print('notificaion>>>',notification)
     if group_name is None and user is not None:
-        group_name = room_name_generator(user, "notification")
-
+        group_name =  room_name_generator(user, "notification")
 
     channel_layer = get_channel_layer()
-    await channel_layer.group_send(
+    print('got channel layer')
+    print(await channel_layer.group_send(
         group_name, {"type": "send_notification", "message": notification,'event_name':type}
-    )
+    ))
