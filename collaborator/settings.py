@@ -32,7 +32,7 @@ SECRET_KEY = "django-insecure-7m0_5-x$att+wt^l$w^_mp+=4u4!f01mmp&1hvg(e=kwocz&x&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['13.234.114.90','0.0.0.0','starfiled.xyz','www.starfiled.xyz']
 
 
 
@@ -64,7 +64,9 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
-    # Add your front-end domain here
+    "http://starfiled.xyz",
+    "http://https://loomixcollaborator-9x6wxxyav-shahids-projects-93b8fcca.vercel.app/",
+    "http://loomixtechnologies.xyz"
 ]
 
 
