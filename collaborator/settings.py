@@ -63,7 +63,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://starfiled.xyz",
-    "http://https://loomixcollaborator-9x6wxxyav-shahids-projects-93b8fcca.vercel.app/",
+    "http://loomixcollaborator-9x6wxxyav-shahids-projects-93b8fcca.vercel.app",
     "http://loomixtechnologies.xyz"
 ]
 
@@ -72,7 +72,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://starfiled.xyz",
-    "http://https://loomixcollaborator-9x6wxxyav-shahids-projects-93b8fcca.vercel.app/",
+    "http://loomixcollaborator-9x6wxxyav-shahids-projects-93b8fcca.vercel.app",
     "http://loomixtechnologies.xyz"
 ]
 CORS_ALLOW_CREDENTIALS = True
