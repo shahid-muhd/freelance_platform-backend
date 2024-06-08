@@ -4,13 +4,17 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
-from .serializers import SubscriptionSerializer, StripeProductSerializer,FreelancerPayoutSerializer
+from .serializers import (
+    SubscriptionSerializer,
+    StripeProductSerializer,
+    FreelancerPayoutSerializer,
+)
 import os
 import stripe
 from django.shortcuts import redirect
 from .payment_controls import subscription_creation_manager, client_payment_manager
 from .models import Subscription as SubscriptionModel
-from .models import StripeProduct,FreelancerPayouts,ProjectPayments
+from .models import StripeProduct, FreelancerPayouts, ProjectPayments
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
@@ -56,8 +60,8 @@ class CreateCheckoutSession(APIView):
                 line_items=[{"price": price_id, "quantity": 1}],
                 payment_method_types=["card"],
                 mode=product_type,
-                success_url="http://localhost:3000/payments/result/success",
-                cancel_url="http://localhost:3000/payments/result/failure",
+                success_url=f"{os.environ['CLIENT_URI']}/payments/result/success",
+                cancel_url=f"{os.environ['CLIENT_URI']}/payments/result/failure",
                 customer_email=request.user.email,
             )
             return Response(checkout_session.url, status=status.HTTP_200_OK)
@@ -126,7 +130,7 @@ class WebHook(APIView):
                 if payment_mode == "subscription":
                     invoice = stripe.Invoice.retrieve(session_data["invoice"])
                     data["invoice_url"] = invoice.hosted_invoice_url
-                    data["subscription_id"] = (session_data["subscription"],)
+                    data["subscription_id"] = session_data["subscription"]
                     subscription_creation_manager(**data)
                 else:
                     session_id = session_data.get("id")
@@ -168,7 +172,7 @@ class PrePayment(APIView):
 
             project_id = request.query_params.get("data[project_id]")
             freelancer_id = request.query_params.get("data[user_id]")
-    
+
             pre_payment_details = StripeProduct.objects.get(
                 project_id=project_id, freelancer_id=freelancer_id
             )
@@ -178,26 +182,29 @@ class PrePayment(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 class FreelancerPayout(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self,request):
-        
-        freelancer_id=request.data['freelancer']
-        project_id=request.data['project']
-        payment_type=request.data['payment_type']
-        
+    def post(self, request):
+
+        freelancer_id = request.data["freelancer"]
+        project_id = request.data["project"]
+        payment_type = request.data["payment_type"]
+
         try:
-            project_payment=ProjectPayments.objects.get(project_id=project_id,freelancer_id=freelancer_id,payment_type=payment_type)
-            
-            payout_details={               
-            'client_payment_details_id':project_payment,
-            'payment_type':payment_type,
-            'freelancer_id':freelancer_id
+            project_payment = ProjectPayments.objects.get(
+                project_id=project_id,
+                freelancer_id=freelancer_id,
+                payment_type=payment_type,
+            )
+
+            payout_details = {
+                "client_payment_details_id": project_payment,
+                "payment_type": payment_type,
+                "freelancer_id": freelancer_id,
             }
-            new_freelancer_payout=FreelancerPayoutSerializer(data=payout_details)
-        
+            new_freelancer_payout = FreelancerPayoutSerializer(data=payout_details)
+
             if new_freelancer_payout.is_valid():
                 new_freelancer_payout.save()
 
@@ -208,11 +215,5 @@ class FreelancerPayout(APIView):
             return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
 
         except Exception as e:
-            print('err in freelancer ayout >>',e)
+            print("err in freelancer ayout >>", e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-    
-
-    
