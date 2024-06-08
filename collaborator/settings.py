@@ -147,12 +147,12 @@ DATABASES = {
     }
 }
 
-MONGO_URI = f"mongodb+srv://{os.environ['MONGO_USERNAME']}:{os.environ['MONGO_PASSWORD']}@cluster0.u7e6i35.mongodb.net/{os.environ['MONGO_DB_NAME']}?retryWrites=true&w=majority&appName=Cluster0"
-mongoengine.connect(host=MONGO_URI)
+# MONGO_URI = f"mongodb+srv://{os.environ['MONGO_USERNAME']}:{os.environ['MONGO_PASSWORD']}@cluster0.u7e6i35.mongodb.net/{os.environ['MONGO_DB_NAME']}?retryWrites=true&w=majority&appName=Cluster0"
+# mongoengine.connect(host=MONGO_URI)
 
-# mongoengine.connect(
-#     db="loomix_jobs", host="localhost", username="shahid", password="shahid123"
-# )
+mongoengine.connect(
+    db="loomix_jobs", host="localhost", username="shahid", password="shahid123"
+)
 
 
 # Password validation

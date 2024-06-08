@@ -76,7 +76,9 @@ class RegisterView(APIView):
 
         if token:
             if email_verifier(token=token):
-                return redirect(f"{os.environ['CLIENT_URI']}/auth/register/create-account")
+                return redirect(
+                    f"{os.environ['CLIENT_URI']}/auth/register/create-account"
+                )
             return redirect(f"{os.environ['CLIENT_URI']}/tg34tbb/")
 
         if email:
@@ -214,6 +216,10 @@ class UserView(APIView):
         if "address" in request.data:
             address_data = request.data["address"]
             address_data["user"] = user.id
+
+            check_address_query = Address.objects.filter(user_id=request.user.id)
+            if check_address_query.exists():
+                check_address_query.delete()
 
             serializer = Addressserializer(data=request.data["address"])
         if serializer.is_valid():
