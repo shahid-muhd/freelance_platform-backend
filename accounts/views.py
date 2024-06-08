@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import redirect
 from rest_framework.views import APIView
 from .serializers import UserRegisterSerializer, UserSerializer, Addressserializer
@@ -75,8 +76,8 @@ class RegisterView(APIView):
 
         if token:
             if email_verifier(token=token):
-                return redirect("http://localhost:3000/auth/register/create-account")
-            return redirect("http://localhost:3000/tg34tbb/")
+                return redirect(f"{os.environ['CLIENT_URI']}/auth/register/create-account")
+            return redirect(f"{os.environ['CLIENT_URI']}/tg34tbb/")
 
         if email:
             if email_verifier(email=email):

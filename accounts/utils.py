@@ -27,7 +27,7 @@ def mail_html_content_config(token):
                            <body>
                                <p>Dear User,</p>
                                <p>Please click the button below to verify your email address for Loomix account:</p>
-                               <a href="http://localhost:8000/auth/register?token={token}" style="display: inline-block; background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a>
+                               <a href="http://starfiled.xyz/auth/register?token={token}" style="display: inline-block; background-color: #007bff; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a>
                                <p>This link will expire automatically after 5 minutes</p>
                                <p>If you didn't request this, you can safely ignore this email.</p>
                            </body>
